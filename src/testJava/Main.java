@@ -4,8 +4,10 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 import org.jsoup.Jsoup;
@@ -16,6 +18,10 @@ import org.jsoup.select.Elements;
 public class Main {
 	public static void main(String[] args){
 		SQLiteJDBC.createTable();
+//		ArrayList<Bean> list = SQLiteJDBC.getAllList();
+//		for(Bean bean : list) {
+//			System.out.println(bean.toString());
+//		}
 //		checkXiaYingXian();
 //		zhangtingban();
 	}
@@ -152,7 +158,47 @@ public class Main {
 	    return list;
 	}
 	
+	public static ArrayList<Bean> readFileByLines(String fileName,long time) {
+		SimpleDateFormat sDateFormat=new SimpleDateFormat("yyyy/MM/dd");
+		Date d = new Date();
+		d.setTime(time);
+		String date = sDateFormat.format(d);
+		
+		ArrayList<Bean> list = new ArrayList<>();
+	    File file = new File(fileName);
+	    BufferedReader reader = null;
+	    try {
+	        reader = new BufferedReader(new FileReader(file));
+	        String tempString = null;
+	        int line = 1;
+	        // 一次读入一行，直到读入null为文件结束
+	        while ((tempString = reader.readLine()) != null ) {
+	        	String[] array = tempString.split(",");
+	        	if(array.length == 7) {
+//		            System.out.println("line " + line + ": " + tempString);
+	        		Bean bean = new Bean(array);
+	        		if(bean.date.compareTo(date) >0) {
+		        		list.add(bean);
+	        		}
+	        	}
+	            line++;
+	        }
+	        reader.close();
+	    } catch (IOException e) {
+	        e.printStackTrace();
+	    } finally {
+	        if (reader != null) {
+	            try {
+	                reader.close();
+	            } catch (IOException e1) {
+	            }
+	        }
+	    }
+	    return list;
+	}
+	
 	static class Bean {
+		String id;
 		String date;
 		Double open;
 		Double high;
@@ -160,6 +206,8 @@ public class Main {
 		Double close;
 		Double amount;
 		Double turnover;
+		
+		Bean(){}
 		
 		Bean(String[] array) {
 			date = array[0];
@@ -170,6 +218,14 @@ public class Main {
 			amount = Double.valueOf(array[5]);
 			turnover = Double.valueOf(array[6]);
 		}
+
+		@Override
+		public String toString() {
+			return "Bean [id=" + id + ", date=" + date + ", open=" + open + ", high=" + high + ", low=" + low
+					+ ", close=" + close + ", amount=" + amount + ", turnover=" + turnover + "]";
+		}
+		
+		
 	}
 	
 	static class ZTBBean {
