@@ -43,7 +43,7 @@ public class SQLiteJDBC {
 	      PreparedStatement prep = connection.prepareStatement(
 	    	      "insert into data values (?,?,?,?,?,?,?,?);");
 	      
-		    File file = new File("D:\\new_tdx\\code\\data\\date");
+		    File file = new File(Main.dataPath);
 		    for(File subFile : file.listFiles()) {
 				list = dateUpdateTime > 0 ? Main.readFileByLines(subFile.getAbsolutePath(),dateUpdateTime):Main.readFileByLines(subFile.getAbsolutePath());
 				for(Bean bean : list){

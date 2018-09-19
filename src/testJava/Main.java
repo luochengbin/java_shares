@@ -16,6 +16,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 public class Main {
+	public static String dataPath = "D:\\ben\\workspace\\stockdata";
 	public static void main(String[] args){
 		SQLiteJDBC.createTable();
 //		ArrayList<Bean> list = SQLiteJDBC.getAllList();
@@ -48,7 +49,7 @@ public class Main {
 	}
 	
 	public static void checkHuimaqiang() {
-	    File file = new File("D:\\new_tdx\\code\\data\\date");
+	    File file = new File(dataPath);
 		int goldCount = 0;
 		
 	    for(File subFile : file.listFiles()) {
@@ -76,7 +77,7 @@ public class Main {
 	}
 	
 	public static void checkXiaYingXian() {
-	    File file = new File("D:\\new_tdx\\code\\data\\date");
+	    File file = new File(dataPath);
 		int goldCount = 0;
 		int upCount = 0;
 		int downCount = 0;
