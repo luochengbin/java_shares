@@ -17,8 +17,9 @@ import org.jsoup.select.Elements;
 
 public class Main {
 	public static void main(String[] args){
+		NetRequestAction.DFCF_F10();
 //		SQLiteJDBC.createTable();
 //		NetRequestAction.zhangtingban();
 	}
-	
+
 }

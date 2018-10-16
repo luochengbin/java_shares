@@ -16,8 +16,6 @@ import java.util.Date;
 
 public class SQLiteJDBC {
 
-	public static String dataPath = "D:\\new_tdx\\code\\data\\date";
-	
 	public static void createTable() {
 
 	    Connection connection = null;
@@ -67,7 +65,7 @@ public class SQLiteJDBC {
 	      PreparedStatement prep = connection.prepareStatement(
 	    	      "insert into data values (?,?,?,?,?,?,?,?);");
 	      
-		    File file = new File(dataPath);
+		    File file = new File(BaseConfig.dataPath);
 		    for(File subFile : file.listFiles()) {
 				list = dateUpdateTime > 0 ? readFileByLines(subFile.getAbsolutePath(),dateUpdateTime):readFileByLines(subFile.getAbsolutePath());
 				for(Bean bean : list){

@@ -9,8 +9,19 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import com.google.gson.Gson;
+
+import testJava.bean.DFCF_F10_Bean;
+
 public class NetRequestAction {
 	
+	
+	public static void DFCF_F10() {
+		Gson gson = new Gson();
+        String url = "http://emweb.securities.eastmoney.com/PC_HSF10/OperationsRequired/OperationsRequiredAjax?times=1&code=SH600000";
+        DFCF_F10_Bean bean = gson.fromJson(HttpManager.sendGet(url),DFCF_F10_Bean.class);
+        System.out.println("xxyy "+bean.getBaseYear());
+	}
 	
 	/**
 	 * 股海明灯上面的涨停板数据
