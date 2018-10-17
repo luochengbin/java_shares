@@ -17,8 +17,10 @@ import org.jsoup.select.Elements;
 
 public class Main {
 	public static void main(String[] args){
-		NetRequestAction.DFCF_F10();
-//		SQLiteJDBC.createTable();
+		SQLiteJDBC.createTable();
+//		NetRequestAction.DFCF_F10();
+		NetRequestAction.DFCF_GET_Bean();
+		
 //		NetRequestAction.zhangtingban();
 	}
 

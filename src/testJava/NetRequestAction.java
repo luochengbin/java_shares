@@ -12,15 +12,54 @@ import org.jsoup.select.Elements;
 import com.google.gson.Gson;
 
 import testJava.bean.DFCF_F10_Bean;
+import testJava.bean.DFCF_Share_Bean;
 
 public class NetRequestAction {
 	
+	public static void DFCF_GET_Bean() {
+		Gson gson = new Gson();
+		ArrayList<DFCF_Share_Bean> list = new ArrayList<>();
+		int index = 0;
+//		for(String key : SQLiteJDBC.sharesMap.keySet()){
+	        String url = "http://nufm.dfcfw.com/EM_Finance2014NumericApplication/JS.aspx?ps=500&token=64a483cbad8b666efa51677820e6b21c&type=CT&cmd=3003002%2C6000001%2C6000041&sty=CTF&cb=getStockFullInfo&js=%28%5B%28x%29%5D%29&0.7869784760156245=";
+	        String rawresponse = HttpManager.sendGet(url);
+	        
+	        System.out.println(rawresponse);
+	        String response = rawresponse.replaceAll("getStockFullInfo\\(\\[\"", "").replaceAll("\"\\]\\)", "");
+	        System.out.println(response);
+	        String[] subResponse = response.split(",");
+	        for(String sub : subResponse) {
+		        DFCF_Share_Bean bean = new DFCF_Share_Bean();
+		        bean.setData(sub);
+		        list.add(bean);
+		        System.out.println("DFCF_GET_Bean "+bean);
+	        }
+	        index++;
+	        
+//	        if(index>10) {
+//	        	break;
+//	        }
+//		}
+	}
 	
 	public static void DFCF_F10() {
 		Gson gson = new Gson();
-        String url = "http://emweb.securities.eastmoney.com/PC_HSF10/OperationsRequired/OperationsRequiredAjax?times=1&code=SH600000";
-        DFCF_F10_Bean bean = gson.fromJson(HttpManager.sendGet(url),DFCF_F10_Bean.class);
-        System.out.println("xxyy "+bean.getBaseYear());
+		ArrayList<DFCF_F10_Bean> list = new ArrayList<>();
+		int index = 0;
+		for(String key : SQLiteJDBC.sharesMap.keySet()){
+	        String url = "http://emweb.securities.eastmoney.com/PC_HSF10/OperationsRequired/OperationsRequiredAjax?times=1&code="+(key.startsWith("6")?"SH"+key : "SZ"+key  );
+	        String response = HttpManager.sendGet(url);
+	        DFCF_F10_Bean bean = gson.fromJson(response,DFCF_F10_Bean.class);
+	        bean.setId(key);
+	        list.add(bean);
+	        index++;
+	        System.out.println("DFCF_F10 "+index+"/"+list.size()+" "+key);
+	        
+	        if(index>10) {
+	        	break;
+	        }
+		}
+		SQLiteJDBC.updateCWFX(list);
 	}
 	
 	/**
