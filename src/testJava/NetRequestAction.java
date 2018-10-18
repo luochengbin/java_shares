@@ -20,26 +20,31 @@ public class NetRequestAction {
 		Gson gson = new Gson();
 		ArrayList<DFCF_Share_Bean> list = new ArrayList<>();
 		int index = 0;
-//		for(String key : SQLiteJDBC.sharesMap.keySet()){
-	        String url = "http://nufm.dfcfw.com/EM_Finance2014NumericApplication/JS.aspx?ps=500&token=64a483cbad8b666efa51677820e6b21c&type=CT&cmd=3003002%2C6000001%2C6000041&sty=CTF&cb=getStockFullInfo&js=%28%5B%28x%29%5D%29&0.7869784760156245=";
-	        String rawresponse = HttpManager.sendGet(url);
-	        
-	        System.out.println(rawresponse);
-	        String response = rawresponse.replaceAll("getStockFullInfo\\(\\[\"", "").replaceAll("\"\\]\\)", "");
-	        System.out.println(response);
-	        String[] subResponse = response.split(",");
-	        for(String sub : subResponse) {
-		        DFCF_Share_Bean bean = new DFCF_Share_Bean();
-		        bean.setData(sub);
-		        list.add(bean);
-		        System.out.println("DFCF_GET_Bean "+bean);
-	        }
-	        index++;
-	        
-//	        if(index>10) {
-//	        	break;
-//	        }
-//		}
+		int step = 1;
+		String ids = "";
+		for(String key : SQLiteJDBC.sharesMap.keySet()){
+			if(index >100 || step == SQLiteJDBC.sharesMap.size()) {
+				ids += key.startsWith("6")?(key+"1"):(key+"2");
+				String url = "http://nufm.dfcfw.com/EM_Finance2014NumericApplication/JS.aspx?ps=500&token=580f8e855db9d9de7cb332b3990b61a3&type=CT&cmd="+ids+"&sty=CTALL&cb=getStockFullInfo&js=([(x)],true)&0.2644922395264093";
+				String rawresponse = HttpManager.sendGet(url);
+		        String response = rawresponse.replaceAll("getStockFullInfo\\(\\[\"", "").replaceAll("\"\\]\\)", "");
+		        String[] subResponse = response.split("\",\"");
+		        for(String sub : subResponse) {
+			        System.out.println("DFCF_GET_Bean "+list.size()+" "+sub);
+			        DFCF_Share_Bean bean = new DFCF_Share_Bean();
+			        bean.setData(sub);
+			        list.add(bean);
+		        }
+		        
+				ids = "";
+				index = 0;
+			}else {
+				ids += key.startsWith("6")?(key+"1"):(key+"2")+",";
+			}
+			step++;
+			index++;
+		}
+		SQLiteJDBC.updateCWFXDetail(list);
 	}
 	
 	public static void DFCF_F10() {
@@ -53,11 +58,10 @@ public class NetRequestAction {
 	        bean.setId(key);
 	        list.add(bean);
 	        index++;
-	        System.out.println("DFCF_F10 "+index+"/"+list.size()+" "+key);
-	        
-	        if(index>10) {
-	        	break;
-	        }
+	        System.out.println("DFCF_F10 "+index+"/"+SQLiteJDBC.sharesMap.size()+" "+key);
+//	        if(index >5){
+//	        	break;
+//	        }
 		}
 		SQLiteJDBC.updateCWFX(list);
 	}
