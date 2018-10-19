@@ -1438,8 +1438,19 @@ public class DFCF_F10_Bean {
         private String zzczzl;
         private String zcfzl;
         private String ldfz;
+        private String id;
+        
+        
 
-        public String getRq() {
+        public String getId() {
+			return id;
+		}
+
+		public void setId(String id) {
+			this.id = id;
+		}
+
+		public String getRq() {
             return rq;
         }
 
