@@ -407,9 +407,12 @@ public class SQLiteJDBC {
 	      ArrayList<TDX_Share_Bean> list = new ArrayList<>();
 	      PreparedStatement prep = connection.prepareStatement(
 	    	      "insert into data values (?,?,?,?,?,?,?,?);");
-	      
+
+		    long modifiedTime = 0;
 		    File file = new File(BaseConfig.dataPath);
-		    long modifiedTime = file.lastModified();
+		    for(File sf : file.listFiles()) {
+		    	modifiedTime = sf.lastModified();
+		    }
 		    
 		    if(modifiedTime > dateUpdateTime) {
 			    BaseConfig.sharesMap = new HashMap<>();
