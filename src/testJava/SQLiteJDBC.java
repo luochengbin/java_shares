@@ -305,32 +305,32 @@ public class SQLiteJDBC {
 //	      statement.executeUpdate("drop table if exists data");
 	      statement.executeUpdate("create table if not exists cwfx ("
 		      		+ "id text,"
-		      		+ "rq text, " //季度
-		      		+ "jbmgsy text, " //基本每股收益
-		      		+ "kfmgsy text, "//扣非每股收益
-		      		+ "xsmgsy text, "//稀释每股收益
-		      		+ "gsjlr text,"//归属净利润(元)
-		      		+ "gsjlrtbzz text,"//归属净利润同比增长(%)
-		      		+ "gsjlrgdhbzz text,"//归属净利润滚动环比增长(%)
-		      		+ "jqjzcsyl text,"//加权净资产收益率(%)
-		      		+ "tbjzcsyl text,"//摊薄净资产收益率(%)
-		      		+ "sjsl text,"//实际税率(%)
-		      		+ "zzczzl text,"//总资产周转率(次)
-		      		+ "zcfzl text,"//资产负债率(%)
-		      		+ "ldfz text,"//流动负债/总负债(%)
+		      		+ "rq text, " 
+		      		+ "jbmgsy text, " 
+		      		+ "kfmgsy text, "
+		      		+ "xsmgsy text, "
+		      		+ "gsjlr text,"
+		      		+ "gsjlrtbzz text,"
+		      		+ "gsjlrgdhbzz text,"
+		      		+ "jqjzcsyl text,"
+		      		+ "tbjzcsyl text,"
+		      		+ "sjsl text,"
+		      		+ "zzczzl text,"
+		      		+ "zcfzl text,"
+		      		+ "ldfz text,"
 		      		+ "constraint pk_t2 primary key (id,rq)) ");
 	      
 	      statement.executeUpdate("create table if not exists bk ("
 		      		+ "id text primary key,"
-		      		+ "name text, " //名称
-		      		+ "type double, " //类型 0行业 1概念
-		      		+ "zdf double, "//涨跌幅
-		      		+ "zsz double, "//总市值
-		      		+ "hsl double,"//换收率
-		      		+ "szjs double,"//上涨家数
-		      		+ "xdjs double,"//下跌家数
-		      		+ "zxj double,"//最新价
-		      		+ "zde double)");//涨跌额
+		      		+ "name text, " 
+		      		+ "type double, " 
+		      		+ "zdf double, "
+		      		+ "zsz double, "
+		      		+ "hsl double,"
+		      		+ "szjs double,"
+		      		+ "xdjs double,"
+		      		+ "zxj double,"
+		      		+ "zde double)");
 	      
 	      statement.executeUpdate("create table if not exists detail ("
 		      		+ "id text primary key,"
@@ -409,37 +409,41 @@ public class SQLiteJDBC {
 	    	      "insert into data values (?,?,?,?,?,?,?,?);");
 	      
 		    File file = new File(BaseConfig.dataPath);
-		    BaseConfig.sharesMap = new HashMap<>();
-		    for(File subFile : file.listFiles()) {
-		    	BaseConfig.sharesMap.put(subFile.getName().substring(3, 9), null);
-				list = dateUpdateTime > 0 ? readFileByLines(subFile.getAbsolutePath(),dateUpdateTime):readFileByLines(subFile.getAbsolutePath());
-				System.out.println("insert "+subFile.getName());
-				for(TDX_Share_Bean bean : list){
-//				      statement.executeUpdate("insert into data values("+subFile.getName().substring(3, 9)+", '',"+bean.date+","+bean.open+","+bean.high+","+bean.low+","+bean.close+","+bean.amount+","+bean.turnover+")");
-					String name = subFile.getName().substring(3, 9);
-					prep.setString(1, name);  
-					prep.setString(2, bean.date);  
-					prep.setDouble(3, bean.open); 
-					prep.setDouble(4, bean.high); 
-					prep.setDouble(5, bean.low); 
-					prep.setDouble(6, bean.close); 
-					prep.setDouble(7, bean.amount); 
-					prep.setDouble(8, bean.turnover); 
-		    	    prep.addBatch();
-				}
-		    }
+		    long modifiedTime = file.lastModified();
 		    
+		    if(modifiedTime > dateUpdateTime) {
+			    BaseConfig.sharesMap = new HashMap<>();
+			    for(File subFile : file.listFiles()) {
+			    	BaseConfig.sharesMap.put(subFile.getName().substring(3, 9), null);
+					list = dateUpdateTime > 0 ? readFileByLines(subFile.getAbsolutePath(),dateUpdateTime):readFileByLines(subFile.getAbsolutePath());
+					System.out.println("insert "+subFile.getName());
+					for(TDX_Share_Bean bean : list){
+//					      statement.executeUpdate("insert into data values("+subFile.getName().substring(3, 9)+", '',"+bean.date+","+bean.open+","+bean.high+","+bean.low+","+bean.close+","+bean.amount+","+bean.turnover+")");
+						String name = subFile.getName().substring(3, 9);
+						prep.setString(1, name);  
+						prep.setString(2, bean.date);  
+						prep.setDouble(3, bean.open); 
+						prep.setDouble(4, bean.high); 
+						prep.setDouble(5, bean.low); 
+						prep.setDouble(6, bean.close); 
+						prep.setDouble(7, bean.amount); 
+						prep.setDouble(8, bean.turnover); 
+			    	    prep.addBatch();
+					}
+			    }
+			    
 
-		    connection.setAutoCommit(false);
-    	    prep.executeBatch();
-    	    
-    	    if(list.size()>0) {
-    		    statement.executeUpdate("replace into setting(name,value)values('data_update_time',"+System.currentTimeMillis()+")");
-    	    }
+			    connection.setAutoCommit(false);
+	    	    prep.executeBatch();
+	    	    
+	    	    if(list.size()>0) {
+	    		    statement.executeUpdate("replace into setting(name,value)values('data_update_time',"+System.currentTimeMillis()+")");
+	    	    }
+		    }
     	    
     	    connection.setAutoCommit(true);
     	    connection.close();
-			System.out.println("init done ");
+			System.out.println("SQLiteJDBC init done ");
 	    }
 	    catch(Exception e)
 	    {
