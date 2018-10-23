@@ -30,6 +30,18 @@ public class SQLiteJDBC_CST {
 		      		+ "updown double, " 
 		      		+ "comment text)");
 	      
+	      statement.executeUpdate("create table if not exists bk ("
+		      		+ "id text primary key,"
+		      		+ "name text, " 
+		      		+ "type double," 
+		      		+ "level double," 
+		      		+"comment text)");
+	      
+	      statement.executeUpdate("create table if not exists dp ("
+		      		+ "id text primary key,"
+		      		+ "name text, "
+		      		+"comment text)");
+	      
 	      PreparedStatement prep = connection.prepareStatement(
 	    	      "insert into data values (?,?,?,?,?,?,?);");
 	      
@@ -40,8 +52,20 @@ public class SQLiteJDBC_CST {
 				prep.addBatch();
 		    }
 		    
+		      PreparedStatement prep1 = connection.prepareStatement(
+		    	      "insert into bk values (?,?,?);");
+		      
+			    for(String id : BaseConfig.dfcf_bk_map.keySet()) {
+			    	String name = BaseConfig.dfcf_bk_map.get(id).getName();
+			    	double type = BaseConfig.dfcf_bk_map.get(id).getType();
+			    	prep1.setString(1, id);  
+			    	prep1.setString(2, name);
+			    	prep1.setDouble(3, type);
+			    	prep1.addBatch();
+			    }
 
 		    connection.setAutoCommit(false);
+    	    prep1.executeBatch();
     	    prep.executeBatch();
     	    
     	    connection.setAutoCommit(true);
