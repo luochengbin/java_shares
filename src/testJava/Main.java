@@ -13,6 +13,6 @@ public class Main {
 		BaseConfig.tdx_share_map = SQLiteJDBC.getAllTDXDataList();
 
 //		StrategyAction.lowAmountIn100Day();
-		SQLiteJDBC_CST.createTable();
+//		SQLiteJDBC_CST.createTable();
 	}
 }
