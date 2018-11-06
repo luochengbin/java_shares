@@ -16,7 +16,7 @@ public class SQLiteJDBC_CST {
 	    {
 			Class.forName("org.sqlite.JDBC");
 	      // create a database connection
-	      connection = DriverManager.getConnection("jdbc:sqlite:custom.db");
+	      connection = DriverManager.getConnection("jdbc:sqlite:cus");
 	      Statement statement = connection.createStatement();
 	      statement.setQueryTimeout(30);  // set timeout to 30 sec.
 

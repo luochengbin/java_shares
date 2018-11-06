@@ -12,6 +12,8 @@ public class Main {
 		BaseConfig.dfcf_f10_map = SQLiteJDBC.getAllF10DataList();
 		BaseConfig.tdx_share_map = SQLiteJDBC.getAllTDXDataList();
 
+		StrategyAction.xiayingxian(100);
+//		StrategyAction.huimaqiang(600000);
 //		StrategyAction.lowAmountIn100Day();
 //		SQLiteJDBC_CST.createTable();
 	}

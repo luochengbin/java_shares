@@ -549,6 +549,7 @@ public class SQLiteJDBC {
 	        System.err.println(e);
 	      }
 	    }
+		System.out.println("getAllSharesDataList init done ");
 		return list;
 	}
 	
@@ -604,6 +605,7 @@ public class SQLiteJDBC {
 	        System.err.println(e);
 	      }
 	    }
+		System.out.println("getAllF10DataList init done ");
 		return list;
 	}
 
@@ -654,6 +656,7 @@ public class SQLiteJDBC {
 	        System.err.println(e);
 	      }
 	    }
+		System.out.println("getAllBKDataList init done ");
 		return list;
 	}
 	
@@ -710,6 +713,7 @@ public class SQLiteJDBC {
 	        System.err.println(e);
 	      }
 	    }
+		System.out.println("getAllTDXDataList init done ");
 		return list;
 	}
 

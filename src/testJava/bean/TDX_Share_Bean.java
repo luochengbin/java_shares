@@ -10,6 +10,10 @@ public class TDX_Share_Bean {
 	public Double amount;
 	public Double turnover;
 	
+	public Double flag1;
+	public Double flag2;
+	public Double flag3;
+	
 	public TDX_Share_Bean(){}
 	
 	public TDX_Share_Bean(String[] array) {
