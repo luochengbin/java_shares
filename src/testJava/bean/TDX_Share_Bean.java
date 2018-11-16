@@ -3,16 +3,16 @@ package testJava.bean;
 public class TDX_Share_Bean {
 	public String id;
 	public String date;
-	public Double open;
-	public Double high;
-	public Double low;
-	public Double close;
-	public Double amount;
-	public Double turnover;
+	public double open;
+	public double high;
+	public double low;
+	public double close;
+	public double amount;
+	public double turnover;
 	
-	public Double flag1;
-	public Double flag2;
-	public Double flag3;
+	public double flag1;
+	public double flag2;
+	public double flag3;
 	
 	public TDX_Share_Bean(){}
 	
