@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -22,6 +23,7 @@ import testJava.bean.DFCF_Share_Bean;
 import testJava.bean.TDX_Share_Bean;
 
 public class SQLiteJDBC {
+	public final static int EMA1 = 12,EMA2 = 26,DIF = 9;
 	
 	public static void updateCWFXDetail(ArrayList<DFCF_Share_Bean> list) {
 	    Connection connection = null;
@@ -117,10 +119,22 @@ public class SQLiteJDBC {
     	    prep.executeBatch();
     	    
     	    connection.setAutoCommit(true);
-    	    connection.close();
     	    System.out.println("updateCWFX_BEAN done");
 	    }catch(Exception e) {
 			e.printStackTrace();
+	    }
+	    finally
+	    {
+	      try
+	      {
+	        if(connection != null)
+	          connection.close();
+	      }
+	      catch(SQLException e)
+	      {
+	        // connection close failed.
+	        System.err.println(e);
+	      }
 	    }
 	}
 	
@@ -157,10 +171,22 @@ public class SQLiteJDBC {
 		    connection.setAutoCommit(false);
     	    prep.executeBatch();
     	    connection.setAutoCommit(true);
-    	    connection.close();
     	    System.out.println("updateBK done");
 	    }catch(Exception e) {
 			e.printStackTrace();
+	    }
+	    finally
+	    {
+	      try
+	      {
+	        if(connection != null)
+	          connection.close();
+	      }
+	      catch(SQLException e)
+	      {
+	        // connection close failed.
+	        System.err.println(e);
+	      }
 	    }
 	}
 	
@@ -284,10 +310,22 @@ public class SQLiteJDBC {
   	    prep1.executeBatch();
     	    
     	    connection.setAutoCommit(true);
-    	    connection.close();
     	    System.out.println("updateCWFX_F10 F10 done");
 	    }catch(Exception e) {
 			e.printStackTrace();
+	    }
+	    finally
+	    {
+	      try
+	      {
+	        if(connection != null)
+	          connection.close();
+	      }
+	      catch(SQLException e)
+	      {
+	        // connection close failed.
+	        System.err.println(e);
+	      }
 	    }
 	}
 	
@@ -402,7 +440,6 @@ public class SQLiteJDBC {
 			Date d = new Date();
 			d.setTime(dateUpdateTime);
 			String date = sDateFormat.format(d);
-			statement.execute("delete from data where date like '"+date+"'");
 		  
 	      ArrayList<TDX_Share_Bean> list = new ArrayList<>();
 	      PreparedStatement prep = connection.prepareStatement(
@@ -411,18 +448,28 @@ public class SQLiteJDBC {
 		    long modifiedTime = 0;
 		    File file = new File(BaseConfig.dataPath);
 		    for(File sf : file.listFiles()) {
-		    	modifiedTime = sf.lastModified();
+		    	if(sf.lastModified() > modifiedTime){
+			    	modifiedTime = sf.lastModified();
+		    	}
 		    }
-		    
+
 		    if(modifiedTime > dateUpdateTime) {
+	    	    connection.setAutoCommit(true);
+				statement.execute("delete from data where date like '"+date+"'");
 			    BaseConfig.sharesMap = new HashMap<>();
 			    for(File subFile : file.listFiles()) {
 			    	BaseConfig.sharesMap.put(subFile.getName().substring(3, 9), null);
 					list = dateUpdateTime > 0 ? readFileByLines(subFile.getAbsolutePath(),dateUpdateTime):readFileByLines(subFile.getAbsolutePath());
 					System.out.println("insert "+subFile.getName());
+					
+					HashMap<String,String> hh = new HashMap<>();
+					
 					for(TDX_Share_Bean bean : list){
 //					      statement.executeUpdate("insert into data values("+subFile.getName().substring(3, 9)+", '',"+bean.date+","+bean.open+","+bean.high+","+bean.low+","+bean.close+","+bean.amount+","+bean.turnover+")");
 						String name = subFile.getName().substring(3, 9);
+			    	    if(hh.get(name+bean.date) != null) {
+			    	    	continue;
+			    	    }
 						prep.setString(1, name);  
 						prep.setString(2, bean.date);  
 						prep.setDouble(3, bean.open); 
@@ -432,20 +479,17 @@ public class SQLiteJDBC {
 						prep.setDouble(7, bean.amount); 
 						prep.setDouble(8, bean.turnover); 
 			    	    prep.addBatch();
+			    	    hh.put(name+bean.date, name+bean.date);
 					}
 			    }
-			    
-
-			    connection.setAutoCommit(false);
-	    	    prep.executeBatch();
-	    	    
-	    	    if(list.size()>0) {
-	    		    statement.executeUpdate("replace into setting(name,value)values('data_update_time',"+System.currentTimeMillis()+")");
-	    	    }
 		    }
-    	    
+
+		    connection.setAutoCommit(false);
+    	    prep.executeBatch();
     	    connection.setAutoCommit(true);
-    	    connection.close();
+
+		    statement.executeUpdate("replace into setting(name,value)values('data_update_time',"+modifiedTime+")");
+    	    
 			System.out.println("SQLiteJDBC init done ");
 	    }
 	    catch(Exception e)
@@ -671,7 +715,7 @@ public class SQLiteJDBC {
 	      Statement statement = connection.createStatement();
 	      statement.setQueryTimeout(30);  // set timeout to 30 sec.
 
-	      ResultSet rs = statement.executeQuery("select * from data");
+	      ResultSet rs = statement.executeQuery("select * from data order by id");
 	      ArrayList<TDX_Share_Bean> sublist = new ArrayList<TDX_Share_Bean>();
 	      while(rs.next())
 	      {
@@ -684,13 +728,19 @@ public class SQLiteJDBC {
 	    	  bean.close = rs.getDouble("close");
 	    	  bean.amount = rs.getDouble("amount");
 	    	  bean.turnover = rs.getDouble("turnover");
-	    	  
 	    	  if(list.get(bean.id) == null){
 	    		  sublist = new ArrayList<TDX_Share_Bean>();
 	    		  sublist.add(bean);
 	    		  list.put(bean.id, sublist);
 	    	  }else {
 	    		  list.get(bean.id).add(bean);
+	    		  bean.EMA1 = bean.close*2/(EMA1+1)+list.get(bean.id).get(sublist.size()-2).EMA1*(EMA1-1)/(EMA1+1);
+	    		  bean.EMA2 = bean.close*2/(EMA2+1)+list.get(bean.id).get(sublist.size()-2).EMA2*(EMA2-1)/(EMA2+1);
+				  bean.DIF = bean.EMA1 - bean.EMA2;
+				  bean.DEA = bean.DIF*2/(DIF+1)+sublist.get(list.get(bean.id).size()-2).DEA*(DIF-1)/(DIF+1);
+				  bean.MACD = bean.DIF-bean.DEA;
+	    		  
+	    		  System.out.println("MACD "+bean.id+" "+bean.date+" "+bean.DIF+" "+bean.DEA+" "+bean.MACD);
 	    	  }
 	      }
 	    }
@@ -717,7 +767,6 @@ public class SQLiteJDBC {
 		return list;
 	}
 
-
 	/**
 	 * 以行为单位读取文件，常用于读面向行的格式化文件
 	 */
@@ -732,7 +781,13 @@ public class SQLiteJDBC {
 	        // 一次读入一行，直到读入null为文件结束
 	        while ((tempString = reader.readLine()) != null ) {
 	        	String[] array = tempString.split(",");
-	        	if(array.length == 7) {
+	        	if(array.length == 7 && !array[0].trim().equals("")
+	        			&& !array[1].trim().equals("")
+	        			&& !array[2].trim().equals("")
+	        			&& !array[3].trim().equals("")
+	        			&& !array[4].trim().equals("")
+	        			&& !array[5].trim().equals("")
+	        			&& !array[6].trim().equals("")) {
 //		            System.out.println("line " + line + ": " + tempString);
 	        		TDX_Share_Bean bean = new TDX_Share_Bean(array);
 	        		list.add(bean);
@@ -769,7 +824,13 @@ public class SQLiteJDBC {
 	        // 一次读入一行，直到读入null为文件结束
 	        while ((tempString = reader.readLine()) != null ) {
 	        	String[] array = tempString.split(",");
-	        	if(array.length == 7) {
+	        	if(array.length == 7&& !array[0].trim().equals("")
+	        			&& !array[1].trim().equals("")
+	        			&& !array[2].trim().equals("")
+	        			&& !array[3].trim().equals("")
+	        			&& !array[4].trim().equals("")
+	        			&& !array[5].trim().equals("")
+	        			&& !array[6].trim().equals("")) {
 //		            System.out.println("line " + line + ": " + tempString);
 	        		TDX_Share_Bean bean = new TDX_Share_Bean(array);
 	        		if(bean.date.compareTo(date) >= 0) {

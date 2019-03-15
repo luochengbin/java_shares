@@ -169,6 +169,7 @@ public class StrategyAction {
 		HashMap<String,TDX_Share_Bean> map = new HashMap<>();
 		for(String id : BaseConfig.tdx_share_map.keySet()) {
 			ArrayList<TDX_Share_Bean> list = BaseConfig.tdx_share_map.get(id);
+			TDX_Share_Bean latestDay = list.get(list.size()-1);
 			for(int i = list.size()-dayLater ; i-dayAgo > 0 && i > list.size()-dayLater-range  ; i--){
 				TDX_Share_Bean today = list.get(i);
 				double syx = today.high - (today.open > today.close ? today.open : today.close);
@@ -209,7 +210,7 @@ public class StrategyAction {
 								break;
 							}
 
-							if(fdayIndex == (dayLater-1)) {
+							if(fdayIndex == (dayLater-1) && latestDay.close <= today.close*1.1 && latestDay.close > today.close) {
 								System.out.println("huimaqiang "+today.id+" "+today.date);
 							}
 							

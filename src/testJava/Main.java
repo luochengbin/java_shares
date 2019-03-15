@@ -6,15 +6,15 @@ public class Main {
 //		NetRequestAction.DFCF_F10();
 //		NetRequestAction.DFCF_GET_Bean();
 //		NetRequestAction.DFCF_BK_GET_Bean();
-		
-		BaseConfig.dfcf_bk_map = SQLiteJDBC.getAllBKDataList();
-		BaseConfig.dfcf_share_map = SQLiteJDBC.getAllSharesDataList();
-		BaseConfig.dfcf_f10_map = SQLiteJDBC.getAllF10DataList();
+//		
+//		BaseConfig.dfcf_bk_map = SQLiteJDBC.getAllBKDataList();
+//		BaseConfig.dfcf_share_map = SQLiteJDBC.getAllSharesDataList();
+//		BaseConfig.dfcf_f10_map = SQLiteJDBC.getAllF10DataList();
 		BaseConfig.tdx_share_map = SQLiteJDBC.getAllTDXDataList();
 
 //		StrategyAction.zhichengxian(100);
 //		StrategyAction.xiayingxian(100);
-		StrategyAction.huimaqiang(5);
+//		StrategyAction.huimaqiang(500000);
 //		StrategyAction.lowAmountIn100Day();
 //		SQLiteJDBC_CST.createTable();
 	}

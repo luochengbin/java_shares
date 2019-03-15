@@ -14,6 +14,12 @@ public class TDX_Share_Bean {
 	public double flag2;
 	public double flag3;
 	
+	public double EMA1;
+	public double EMA2;
+	public double DIF;
+	public double DEA;
+	public double MACD;
+	
 	public TDX_Share_Bean(){}
 	
 	public TDX_Share_Bean(String[] array) {
