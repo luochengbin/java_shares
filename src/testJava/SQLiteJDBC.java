@@ -268,43 +268,47 @@ public class SQLiteJDBC {
   	    	      + "(select hs6 from detail where id =?));");
   	      
   	      for(DFCF_F10_Bean bean : list) {
-  	    	prep1.setString(1, bean.getId());
-		      prep1.setString(2, bean.getId());
-		      prep1.setString(3, bean.getHxtc().get(0).getYdnr());
-		      prep1.setString(4, bean.getId());
-		      prep1.setString(5, bean.getId());
-		      prep1.setString(6, bean.getId());
-		      prep1.setString(7, bean.getId());
-		      prep1.setString(8, bean.getId());
-		      prep1.setString(9, bean.getId());
-		      prep1.setString(10, bean.getId());
-		      prep1.setString(11, bean.getId());
-		      prep1.setString(12, bean.getId());
-		      prep1.setString(13, bean.getId());
-		      prep1.setString(14, bean.getId());
-		      prep1.setString(15, bean.getId());
-		      prep1.setString(16, bean.getId());
-		      prep1.setString(17, bean.getId());
-		      prep1.setString(18, bean.getId());
-		      prep1.setString(19, bean.getId());
-		      prep1.setString(20, bean.getId());
-		      prep1.setString(21, bean.getId());
-		      prep1.setString(22, bean.getId());
-		      prep1.setString(23, bean.getId());
-		      prep1.setString(24, bean.getId());
-		      prep1.setString(25, bean.getId());
-		      prep1.setString(26, bean.getId());
-		      prep1.setString(27, bean.getId());
-		      prep1.setString(28, bean.getId());
-		      prep1.setString(29, bean.getId());
-		      prep1.setString(30, bean.getId());
-		      prep1.setString(31, bean.getId());
-		      prep1.setString(32, bean.getId());
-		      prep1.setString(33, bean.getId());
-		      prep1.setString(34, bean.getId());
-		      prep1.setString(35, bean.getId());
-		      prep1.setString(36, bean.getId());
-		      prep1.setString(37, bean.getId());
+  	    	  if( bean.getHxtc() != null &&  bean.getHxtc().size() >0 ) {
+  	    		prep1.setString(1, bean.getId());
+  	    		prep1.setString(3, bean.getHxtc().get(0).getYdnr());
+  	    	  }
+//  	    	prep1.setString(1, bean.getId());
+//		      prep1.setString(2, bean.getId());
+//		      prep1.setString(3, bean.getHxtc().get(0).getYdnr());
+//		      prep1.setString(4, bean.getId());
+//		      prep1.setString(5, bean.getId());
+//		      prep1.setString(6, bean.getId());
+//		      prep1.setString(7, bean.getId());
+//		      prep1.setString(8, bean.getId());
+//		      prep1.setString(9, bean.getId());
+//		      prep1.setString(10, bean.getId());
+//		      prep1.setString(11, bean.getId());
+//		      prep1.setString(12, bean.getId());
+//		      prep1.setString(13, bean.getId());
+//		      prep1.setString(14, bean.getId());
+//		      prep1.setString(15, bean.getId());
+//		      prep1.setString(16, bean.getId());
+//		      prep1.setString(17, bean.getId());
+//		      prep1.setString(18, bean.getId());
+//		      prep1.setString(19, bean.getId());
+//		      prep1.setString(20, bean.getId());
+//		      prep1.setString(21, bean.getId());
+//		      prep1.setString(22, bean.getId());
+//		      prep1.setString(23, bean.getId());
+//		      prep1.setString(24, bean.getId());
+//		      prep1.setString(25, bean.getId());
+//		      prep1.setString(26, bean.getId());
+//		      prep1.setString(27, bean.getId());
+//		      prep1.setString(28, bean.getId());
+//		      prep1.setString(29, bean.getId());
+//		      prep1.setString(30, bean.getId());
+//		      prep1.setString(31, bean.getId());
+//		      prep1.setString(32, bean.getId());
+//		      prep1.setString(33, bean.getId());
+//		      prep1.setString(34, bean.getId());
+//		      prep1.setString(35, bean.getId());
+//		      prep1.setString(36, bean.getId());
+//		      prep1.setString(37, bean.getId());
 		      prep1.addBatch();
   	      }
   	    prep1.executeBatch();
@@ -481,6 +485,11 @@ public class SQLiteJDBC {
 			    	    prep.addBatch();
 			    	    hh.put(name+bean.date, name+bean.date);
 					}
+			    }
+		    }else {
+			    BaseConfig.sharesMap = new HashMap<>();
+			    for(File subFile : file.listFiles()) {
+			    	BaseConfig.sharesMap.put(subFile.getName().substring(3, 9), null);
 			    }
 		    }
 
@@ -738,9 +747,9 @@ public class SQLiteJDBC {
 	    		  bean.EMA2 = bean.close*2/(EMA2+1)+list.get(bean.id).get(sublist.size()-2).EMA2*(EMA2-1)/(EMA2+1);
 				  bean.DIF = bean.EMA1 - bean.EMA2;
 				  bean.DEA = bean.DIF*2/(DIF+1)+sublist.get(list.get(bean.id).size()-2).DEA*(DIF-1)/(DIF+1);
-				  bean.MACD = bean.DIF-bean.DEA;
+				  bean.MACD = (bean.DIF-bean.DEA)*2;
 	    		  
-	    		  System.out.println("MACD "+bean.id+" "+bean.date+" "+bean.DIF+" "+bean.DEA+" "+bean.MACD);
+//	    		  System.out.println("MACD "+bean.id+" "+bean.date+" "+bean.DIF+" "+bean.DEA+" "+bean.MACD);
 	    	  }
 	      }
 	    }
