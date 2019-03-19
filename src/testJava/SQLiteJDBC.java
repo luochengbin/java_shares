@@ -749,7 +749,7 @@ public class SQLiteJDBC {
 				  bean.DEA = bean.DIF*2/(DIF+1)+sublist.get(list.get(bean.id).size()-2).DEA*(DIF-1)/(DIF+1);
 				  bean.MACD = (bean.DIF-bean.DEA)*2;
 	    		  
-//	    		  System.out.println("MACD "+bean.id+" "+bean.date+" "+bean.DIF+" "+bean.DEA+" "+bean.MACD);
+//	    		  System.out.println("MACD "+bean.id+" "+bean.date+" "+bean.close+" "+bean.DIF+" "+bean.DEA+" "+bean.MACD);
 	    	  }
 	      }
 	    }

@@ -8,20 +8,23 @@ import testJava.bean.TDX_Share_Bean;
 public class StrategyAction {
 	
 	public static void MACD_CHECK() {
-		final int CYCLE = 42;
-		final double DIF_RANGE = 0.2;
+		final int CYCLE = 500;
+		final int COUNT_CYCLE = 20;
+		final double DIF_RANGE_UP = 0.2;
+		final double DIF_RANGE_DOWN = -10;
 		HashMap<Integer,Result> countMap = new HashMap<>();
-		
+
+		double fundsCount = 0;
+		double funds = 0;
 		for(String mapKey : BaseConfig.tdx_share_map.keySet()) {
-			double funds = 1;
 			ArrayList<TDX_Share_Bean> list = BaseConfig.tdx_share_map.get(mapKey);
-			if(list.size()>255)
-			for(int beanIndex = list.size()-250; beanIndex < list.size()-1;beanIndex++) {
+			
+			for(int beanIndex = ((CYCLE == 0) ? 0 : ((list.size()-CYCLE) < 0? 0 : (list.size()-CYCLE))); beanIndex < list.size()-1;beanIndex++) {
 				TDX_Share_Bean bean = list.get(beanIndex);
 				TDX_Share_Bean nextBean = list.get(beanIndex+1);
-				if(bean.MACD < 0 && nextBean.MACD >0 && bean.DIF>-DIF_RANGE && bean.DIF<DIF_RANGE){
+				if(bean.MACD < 0 && nextBean.MACD >0 && bean.DIF>DIF_RANGE_DOWN && bean.DIF<DIF_RANGE_UP){
 //					System.out.println("jx: "+nextBean.id+" "+nextBean.date);
-					for(int i =2 ;i< CYCLE && beanIndex+i<list.size();i++) {
+					for(int i =2 ;i< COUNT_CYCLE && beanIndex+i<list.size();i++) {
 						TDX_Share_Bean curBean = list.get(beanIndex+i);
 						Result result = new Result();
 						if(countMap.get(i-1) == null) {
@@ -38,27 +41,37 @@ public class StrategyAction {
 							result.priceDown++;
 							result.priceDownDif += nextBean.DIF;
 						}
-						if(i == CYCLE-1) {
+						
+						if(i == 2) {
 							double per = curBean.close/nextBean.close;
-							funds *= per;
-							if(per <1) {
-								System.out.println("jx: "+nextBean.id+" "+nextBean.date+" "+String.format("%.3f",(funds)));
-							}
+							funds += per;
+							fundsCount ++;
 						}
-						if(curBean.close < nextBean.close || curBean.MACD<0 || curBean.MACD < list.get(beanIndex+i-1).MACD){
-							if(i >2) {
-								double per = curBean.close/nextBean.close;
-								funds *= per;
-								if(per <1) {
-									System.out.println("jx: "+nextBean.id+" "+nextBean.date+" "+String.format("%.3f",(funds)));
-								}
-							}
-							break;
-						}
+						
+//						if(i == (COUNT_CYCLE -1) || (beanIndex+i+1) == list.size()) {
+//							double per = curBean.close/nextBean.getBean(1).close;
+//							funds *= per;
+//							if(per <1) {
+//								System.out.println("jx: "+nextBean.id+" "+nextBean.date+" "+String.format("%.3f",(funds)));
+//							}
+//						}
+						
+//						if(curBean.close < nextBean.open || curBean.MACD<0 || (curBean.MACD < list.get(beanIndex+i-1).MACD && curBean.MACD>1)){
+//							if(i >2) {
+//								double per = curBean.close/nextBean.close;
+//								funds *= per;
+//								if(per <1) {
+//									System.out.println("jx: "+nextBean.id+" "+nextBean.date+" "+String.format("%.3f",(funds)));
+//								}
+//							}
+//							break;
+//						}
 					}
 				}
 			}
 		}
+		System.out.println("xxyy "+(funds/fundsCount));
+		
 		
 		double total = 0;
 		for(Integer key : countMap.keySet()) {

@@ -1,5 +1,7 @@
 package testJava.bean;
 
+import testJava.BaseConfig;
+
 public class TDX_Share_Bean {
 	public String id;
 	public String date;
@@ -32,6 +34,10 @@ public class TDX_Share_Bean {
 		turnover = Double.valueOf(array[6]);
 	}
 
+	public TDX_Share_Bean getBean(int cursor) {
+		return BaseConfig.tdx_share_map.get(id).get(BaseConfig.tdx_share_map.get(id).indexOf(this)+cursor);
+	}
+	
 	@Override
 	public String toString() {
 		return "Bean [id=" + id + ", date=" + date + ", open=" + open + ", high=" + high + ", low=" + low
