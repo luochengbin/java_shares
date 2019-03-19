@@ -10,7 +10,7 @@ import testJava.bean.DFCF_Share_Bean;
 import testJava.bean.TDX_Share_Bean;
 
 public class BaseConfig {
-	public static String dataPath = "D:\\new_tdx\\code\\data\\date";
+	public static String dataPath = "D:\\ben\\workspace\\stockdata";
 	public static Map<String,String> sharesMap;
 	public static HashMap<String,DFCF_Share_Bean> dfcf_share_map;
 	public static HashMap<String,DFCF_F10_Bean.ZyzbAbgqBean> dfcf_f10_map;

@@ -11,7 +11,7 @@ public class StrategyAction {
 		final int CYCLE = 500;
 		final int COUNT_CYCLE = 20;
 		final double DIF_RANGE_UP = 0.2;
-		final double DIF_RANGE_DOWN = -10;
+		final double DIF_RANGE_DOWN = -0.2;
 		HashMap<Integer,Result> countMap = new HashMap<>();
 
 		double fundsCount = 0;
@@ -42,8 +42,8 @@ public class StrategyAction {
 							result.priceDownDif += nextBean.DIF;
 						}
 						
-						if(i == 2) {
-							double per = curBean.close/nextBean.close;
+						if(i == 2 && nextBean.close/bean.close < 1.05 && nextBean.close/bean.close > 0.97) {
+							double per = curBean.high/nextBean.close;
 							funds += per;
 							fundsCount ++;
 						}
