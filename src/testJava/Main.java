@@ -13,7 +13,6 @@ public class Main {
 		BaseConfig.tdx_share_map = SQLiteJDBC.getAllTDXDataList();
 
 		StrategyAction.MACD_CHECK();		
-//		StrategyAction.MACD_SELECT();	
 //		StrategyAction.zhichengxian(100);
 //		StrategyAction.xiayingxian(100);
 //		StrategyAction.huimaqiang(500000);

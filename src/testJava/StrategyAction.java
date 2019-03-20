@@ -7,6 +7,10 @@ import testJava.bean.TDX_Share_Bean;
 
 public class StrategyAction {
 	
+	public static class MACD_CHECK_CONFIG{
+		
+	}
+	
 	public static void MACD_CHECK() {
 		final int CYCLE = 500;
 		final int COUNT_CYCLE = 20;
@@ -15,14 +19,16 @@ public class StrategyAction {
 		HashMap<Integer,Result> countMap = new HashMap<>();
 
 		double fundsCount = 0;
+		double ff = 0 ;
 		double funds = 0;
 		for(String mapKey : BaseConfig.tdx_share_map.keySet()) {
 			ArrayList<TDX_Share_Bean> list = BaseConfig.tdx_share_map.get(mapKey);
+
 			
 			for(int beanIndex = ((CYCLE == 0) ? 0 : ((list.size()-CYCLE) < 0? 0 : (list.size()-CYCLE))); beanIndex < list.size()-1;beanIndex++) {
 				TDX_Share_Bean bean = list.get(beanIndex);
 				TDX_Share_Bean nextBean = list.get(beanIndex+1);
-				if(bean.MACD < 0 && nextBean.MACD >0 && bean.DIF>DIF_RANGE_DOWN && bean.DIF<DIF_RANGE_UP){
+				if(bean.MACD < 0 && nextBean.MACD >0 && bean.DIF>DIF_RANGE_DOWN && bean.DIF <DIF_RANGE_UP){
 //					System.out.println("jx: "+nextBean.id+" "+nextBean.date);
 					for(int i =2 ;i< COUNT_CYCLE && beanIndex+i<list.size();i++) {
 						TDX_Share_Bean curBean = list.get(beanIndex+i);
@@ -37,15 +43,23 @@ public class StrategyAction {
 						if(curBean.close > nextBean.close){
 							result.priceUp++;
 							result.priceUpDif += nextBean.DIF;
+							result.amountUpPer += nextBean.amount/nextBean.getAmountAverage(-5);
 						}else {
 							result.priceDown++;
 							result.priceDownDif += nextBean.DIF;
+							result.amountDownPer += nextBean.amount/nextBean.getAmountAverage(-5);
+//							System.out.println("jx: "+nextBean.id+" "+nextBean.date);
 						}
 						
-						if(i == 2 && nextBean.close/bean.close < 1.05 && nextBean.close/bean.close > 0.97) {
+						if(i == 2) {
 							double per = curBean.high/nextBean.close;
+							if(per > 1.015){
+								per = 1.015;
+							}else {
+								per = curBean.close/nextBean.close;
+							}
 							funds += per;
-							fundsCount ++;
+							fundsCount++;
 						}
 						
 //						if(i == (COUNT_CYCLE -1) || (beanIndex+i+1) == list.size()) {
@@ -69,8 +83,10 @@ public class StrategyAction {
 					}
 				}
 			}
+			
 		}
-		System.out.println("xxyy "+(funds/fundsCount));
+		
+		System.out.println("xxyy "+String.format("%.3f",(funds/fundsCount)));
 		
 		
 		double total = 0;
@@ -83,54 +99,9 @@ public class StrategyAction {
 					"	"+result.priceUp+"/"+result.priceDown+
 					"		"+String.format("%.3f",(result.priceUp/count)) +
 					"	"+String.format("%.3f",result.priceUpDif/result.priceUp)+
-					"	"+String.format("%.3f",result.priceDownDif/result.priceDown));
-		}
-	}
-	
-	public static void MACD_SELECT() {
-		HashMap<Integer,Result> countMap = new HashMap<>();
-		
-		for(String mapKey : BaseConfig.tdx_share_map.keySet()) {
-			ArrayList<TDX_Share_Bean> list = BaseConfig.tdx_share_map.get(mapKey);
-			for(int beanIndex = 0; beanIndex < list.size()-1;beanIndex++) {
-				TDX_Share_Bean bean = list.get(beanIndex);
-				TDX_Share_Bean nextBean = list.get(beanIndex+1);
-				if(bean.MACD < 0 && nextBean.MACD >0 && bean.DIF>-0.2 && bean.DIF<0.2){
-					System.out.println("jx: "+nextBean.id+" "+nextBean.date);
-					for(int i =2 ;i< 42 && beanIndex+i<list.size();i++) {
-						TDX_Share_Bean curBean = list.get(beanIndex+i);
-						Result result = new Result();
-						if(countMap.get(i-1) == null) {
-							result.price  = curBean.close/nextBean.close;
-							countMap.put(i-1, result);
-						}else {
-							result = countMap.get(i-1);
-							result.price += curBean.close/nextBean.close;
-						}
-						if(curBean.close > nextBean.close){
-							result.priceUp++;
-							result.priceUpDif += nextBean.DIF;
-						}else {
-							result.priceDown++;
-							result.priceDownDif += nextBean.DIF;
-						}
-						if(curBean.close < nextBean.close || curBean.MACD<0){
-							break;
-						}
-					}
-				}
-			}
-		}
-		
-		for(Integer key : countMap.keySet()) {
-			Result result = countMap.get(key);
-			double count = result.priceUp+result.priceDown;
-			System.out.println("result "+key+
-					"	"+String.format("%.3f", result.price/count)+
-					"	"+result.priceUp+"/"+result.priceDown+
-					"		"+String.format("%.3f",(result.priceUp/count)) +
-					"	"+String.format("%.3f",result.priceUpDif/result.priceUp)+
-					"	"+String.format("%.3f",result.priceDownDif/result.priceDown));
+					"	"+String.format("%.3f",result.priceDownDif/result.priceDown)+
+					"	"+String.format("%.3f",result.amountDownPer/result.priceDown)+
+					"	"+String.format("%.3f",result.amountUpPer/result.priceUp));
 		}
 	}
 	
@@ -140,6 +111,8 @@ public class StrategyAction {
 		double priceDown;
 		double priceUpDif;
 		double priceDownDif;
+		double amountUpPer;
+		double amountDownPer;
 	}
 	
 	public static HashMap<String,TDX_Share_Bean> zhichengxian(double range) {

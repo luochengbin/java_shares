@@ -422,6 +422,11 @@ public class SQLiteJDBC {
 		      		+ "close double, "
 		      		+ "amount double,"
 		      		+ "turnover double,"
+		      		+ "ema1 double,"
+		      		+ "ema2 double,"
+		      		+ "dif double,"
+		      		+ "dea double,"
+		      		+ "macd double,"
 		      		+ "constraint pk_t2 primary key (id,date)) ");
 	      
 		  statement.executeUpdate("create table if not exists setting ("
@@ -447,7 +452,7 @@ public class SQLiteJDBC {
 		  
 	      ArrayList<TDX_Share_Bean> list = new ArrayList<>();
 	      PreparedStatement prep = connection.prepareStatement(
-	    	      "insert into data values (?,?,?,?,?,?,?,?);");
+	    	      "insert into data values (?,?,?,?,?,?,?,?,?,?,?,?,?);");
 
 		    long modifiedTime = 0;
 		    File file = new File(BaseConfig.dataPath);
@@ -461,6 +466,7 @@ public class SQLiteJDBC {
 	    	    connection.setAutoCommit(true);
 				statement.execute("delete from data where date like '"+date+"'");
 			    BaseConfig.sharesMap = new HashMap<>();
+			    int index =0;
 			    for(File subFile : file.listFiles()) {
 			    	BaseConfig.sharesMap.put(subFile.getName().substring(3, 9), null);
 					list = dateUpdateTime > 0 ? readFileByLines(subFile.getAbsolutePath(),dateUpdateTime):readFileByLines(subFile.getAbsolutePath());
@@ -468,6 +474,21 @@ public class SQLiteJDBC {
 					
 					HashMap<String,String> hh = new HashMap<>();
 					
+					boolean isFirst = true;
+					double ema1 = 0;
+					double ema2 = 0;
+					double dif = 0;
+					double dea = 0;
+					double macd = 0;
+				      ResultSet rs1 = statement.executeQuery("select * from data where id="+subFile.getName().substring(3, 9)+" order by date desc");
+				      if(rs1 != null && rs1.next()){
+				    	  isFirst = false;
+				    	  ema1 = rs1.getDouble(rs1.findColumn("ema1"));
+				    	  ema2 = rs1.getDouble(rs1.findColumn("ema2"));
+				    	  dea = rs1.getDouble(rs1.findColumn("dea"));
+				      }
+
+					connection.setAutoCommit(false);
 					for(TDX_Share_Bean bean : list){
 //					      statement.executeUpdate("insert into data values("+subFile.getName().substring(3, 9)+", '',"+bean.date+","+bean.open+","+bean.high+","+bean.low+","+bean.close+","+bean.amount+","+bean.turnover+")");
 						String name = subFile.getName().substring(3, 9);
@@ -482,8 +503,37 @@ public class SQLiteJDBC {
 						prep.setDouble(6, bean.close); 
 						prep.setDouble(7, bean.amount); 
 						prep.setDouble(8, bean.turnover); 
+						
+						if(isFirst) {
+							isFirst = false;
+							prep.setDouble(9, bean.EMA1); 
+							prep.setDouble(10, bean.EMA2); 
+							prep.setDouble(11, bean.DIF); 
+							prep.setDouble(12, bean.DEA); 
+							prep.setDouble(13, bean.MACD); 
+						}else {
+							bean.EMA1 = ema1 = bean.close*2/(EMA1+1)+ema1*(EMA1-1)/(EMA1+1);
+							bean.EMA2 = ema2 = bean.close*2/(EMA2+1)+ema2*(EMA2-1)/(EMA2+1);
+						    bean.DIF = dif = bean.EMA1 - bean.EMA2;
+						    bean.DEA = dea = bean.DIF*2/(DIF+1)+dea*(DIF-1)/(DIF+1);
+						    bean.MACD = macd = (bean.DIF-bean.DEA)*2;
+						    
+						}
+
+						prep.setDouble(9, bean.EMA1); 
+						prep.setDouble(10, bean.EMA2); 
+						prep.setDouble(11, bean.DIF); 
+						prep.setDouble(12, bean.DEA); 
+						prep.setDouble(13, bean.MACD); 
 			    	    prep.addBatch();
 			    	    hh.put(name+bean.date, name+bean.date);
+					}
+					
+					index++;
+					if(index == 100){
+						index = 0;
+			    	    prep.executeBatch();
+			    	    connection.setAutoCommit(true);
 					}
 			    }
 		    }else {
@@ -493,7 +543,6 @@ public class SQLiteJDBC {
 			    }
 		    }
 
-		    connection.setAutoCommit(false);
     	    prep.executeBatch();
     	    connection.setAutoCommit(true);
 
@@ -724,11 +773,12 @@ public class SQLiteJDBC {
 	      Statement statement = connection.createStatement();
 	      statement.setQueryTimeout(30);  // set timeout to 30 sec.
 
-	      ResultSet rs = statement.executeQuery("select * from data order by id");
+	      ResultSet rs = statement.executeQuery("select * from data");
 	      ArrayList<TDX_Share_Bean> sublist = new ArrayList<TDX_Share_Bean>();
+	      TDX_Share_Bean bean;
 	      while(rs.next())
 	      {
-	    	  TDX_Share_Bean bean = new TDX_Share_Bean();
+	    	  bean = new TDX_Share_Bean();
 	    	  bean.id = rs.getString("id");
 	    	  bean.date = rs.getString("date");
 	    	  bean.open = rs.getDouble("open");
@@ -737,19 +787,25 @@ public class SQLiteJDBC {
 	    	  bean.close = rs.getDouble("close");
 	    	  bean.amount = rs.getDouble("amount");
 	    	  bean.turnover = rs.getDouble("turnover");
+	    	  bean.EMA1 = rs.getDouble("ema1");
+	    	  bean.EMA2 = rs.getDouble("ema2");
+	    	  bean.DIF = rs.getDouble("dif");
+	    	  bean.DEA = rs.getDouble("dea");
+	    	  bean.MACD = rs.getDouble("macd");
 	    	  if(list.get(bean.id) == null){
 	    		  sublist = new ArrayList<TDX_Share_Bean>();
 	    		  sublist.add(bean);
 	    		  list.put(bean.id, sublist);
 	    	  }else {
 	    		  list.get(bean.id).add(bean);
-	    		  bean.EMA1 = bean.close*2/(EMA1+1)+list.get(bean.id).get(sublist.size()-2).EMA1*(EMA1-1)/(EMA1+1);
-	    		  bean.EMA2 = bean.close*2/(EMA2+1)+list.get(bean.id).get(sublist.size()-2).EMA2*(EMA2-1)/(EMA2+1);
-				  bean.DIF = bean.EMA1 - bean.EMA2;
-				  bean.DEA = bean.DIF*2/(DIF+1)+sublist.get(list.get(bean.id).size()-2).DEA*(DIF-1)/(DIF+1);
-				  bean.MACD = (bean.DIF-bean.DEA)*2;
+//	    		  bean.EMA1 = bean.close*2/(EMA1+1)+list.get(bean.id).get(sublist.size()-2).EMA1*(EMA1-1)/(EMA1+1);
+//	    		  bean.EMA2 = bean.close*2/(EMA2+1)+list.get(bean.id).get(sublist.size()-2).EMA2*(EMA2-1)/(EMA2+1);
+//				  bean.DIF = bean.EMA1 - bean.EMA2;
+//				  bean.DEA = bean.DIF*2/(DIF+1)+sublist.get(list.get(bean.id).size()-2).DEA*(DIF-1)/(DIF+1);
+//				  bean.MACD = (bean.DIF-bean.DEA)*2;
 	    		  
 //	    		  System.out.println("MACD "+bean.id+" "+bean.date+" "+bean.close+" "+bean.DIF+" "+bean.DEA+" "+bean.MACD);
+	    		  
 	    	  }
 	      }
 	    }

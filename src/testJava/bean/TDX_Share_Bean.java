@@ -35,7 +35,26 @@ public class TDX_Share_Bean {
 	}
 
 	public TDX_Share_Bean getBean(int cursor) {
-		return BaseConfig.tdx_share_map.get(id).get(BaseConfig.tdx_share_map.get(id).indexOf(this)+cursor);
+		int newIndex = BaseConfig.tdx_share_map.get(id).indexOf(this)+cursor;
+		if(newIndex<0 || newIndex>BaseConfig.tdx_share_map.get(id).size()-1){
+			return null;
+		}
+		return BaseConfig.tdx_share_map.get(id).get(newIndex);
+	}
+	
+	public double getAmountAverage(int offset) {
+		TDX_Share_Bean bean = getBean(offset);
+		double amount = 0;
+		if(bean != null) {
+			amount = bean.amount;	
+		}
+		for(int i = 1;i< Math.abs(offset);i++){
+			TDX_Share_Bean subBean = bean.getBean(i);
+			if(subBean != null) {
+				amount += subBean.amount;
+			}
+		}
+		return amount/Math.abs(offset);
 	}
 	
 	@Override
