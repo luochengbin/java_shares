@@ -1,5 +1,7 @@
 package testJava;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -7,28 +9,119 @@ import testJava.bean.TDX_Share_Bean;
 
 public class StrategyAction {
 	
-	public static class MACD_CHECK_CONFIG{
+	public static class CheckBean{
+		TDX_Share_Bean bean;
+		HashMap<Integer,Double> priceMap;
+		HashMap<Integer,Double> amountMap;
 		
 	}
 	
+	public static void MACD_CHECK2(){
+		double up = 0;
+		double down = 0;
+		long upCount = 0;
+		long downCount = 0;
+		for(String mapKey : BaseConfig.tdx_share_map.keySet()) {
+			ArrayList<TDX_Share_Bean> list = BaseConfig.tdx_share_map.get(mapKey);
+			int index = -1;
+			for(TDX_Share_Bean bean : list){
+				index++;
+				if(index >0 && index <list.size()-50 
+						&& bean.amount/bean.getBean(-1).amount > 2
+						) {
+					for(int i =1;i<list.size()-index-5;i++) {
+						if(bean.amount/bean.getBean(i).amount > 5 && bean.getBean(i).close != 0) {
+							if(bean.getBean(i+1).close > bean.getBean(i).close) {
+								up += bean.getBean(i+1).close / bean.getBean(i).close;
+								upCount++;
+							}else {
+								down += bean.getBean(i+1).close / bean.getBean(i).close;
+								downCount++;
+							}
+						}
+					}
+				}
+				
+			}
+		}
+		System.out.println("down amount "+up/upCount+" "+down/downCount+" "+upCount/downCount);
+	}
+	
+	public static void MACD_CHECK1(){
+		ArrayList<TDX_Share_Bean> uplist = new ArrayList<>();
+		ArrayList<TDX_Share_Bean> downlist = new ArrayList<>();
+		for(String mapKey : BaseConfig.tdx_share_map.keySet()) {
+			ArrayList<TDX_Share_Bean> list = BaseConfig.tdx_share_map.get(mapKey);
+			int index = 0;
+			for(TDX_Share_Bean bean : list){
+				index++;
+				if(index > 50 && bean.getBean(1) != null){
+					if(bean.getBean(1).close > bean.close) {
+						uplist.add(bean);
+					}else {
+						downlist.add(bean);
+					}
+				}
+			}
+		}
+
+		BigDecimal macd_up = new BigDecimal(0);
+		BigDecimal macd_down = new BigDecimal(0);
+		HashMap<Double,Double> macd_up_map = new HashMap<>();
+		HashMap<Double,Double> macd_down_map = new HashMap<>();
+		for(TDX_Share_Bean bean : uplist){
+			macd_up = macd_up.add(new BigDecimal(bean.amount/bean.getAmountAverage(-10)));
+			double temp_macd = Double.valueOf(String.format("%.1f",bean.amount/bean.getAmountAverage(-10)));
+			macd_up_map.put(temp_macd, macd_up_map.get(temp_macd) == null ? 1 : macd_up_map.get(temp_macd)+1);
+		}
+		for(TDX_Share_Bean bean : downlist){
+			macd_down = macd_down.add(new BigDecimal(bean.amount/bean.getAmountAverage(-10)));
+			double temp_macd = Double.valueOf(String.format("%.1f",bean.amount/bean.getAmountAverage(-10)));
+			macd_down_map.put(temp_macd, macd_down_map.get(temp_macd) == null ? 1 : macd_down_map.get(temp_macd)+1);
+		}
+
+		System.out.println("count up "+uplist.size()+" "+macd_up.divide(new BigDecimal(uplist.size()),3,RoundingMode.HALF_UP));
+		System.out.println("count down "+downlist.size()+" "+macd_down.divide(new BigDecimal(downlist.size()),3,RoundingMode.HALF_UP));
+		
+		for(double key : macd_up_map.keySet()){
+//			if(Double.valueOf(String.format("%.3f",macd_up_map.get(key)/uplist.size())) > 0.001)
+//			System.out.println("count up each "+key+" "+macd_up_map.get(key)+" "+String.format("%.3f",macd_up_map.get(key)/uplist.size()));
+		}
+		for(double key : macd_down_map.keySet()){
+//			if(Double.valueOf(String.format("%.3f",macd_down_map.get(key)/downlist.size())) > 0.001)
+//			System.out.println("count down each "+key+" "+macd_down_map.get(key)+" "+String.format("%.3f",macd_down_map.get(key)/downlist.size()));
+		}
+		
+		for(Double i = 0.1 ; i<10;i+=0.1) {
+			double index = Double.valueOf(String.format("%.1f",i));
+			double up = macd_up_map.get(index) == null ? 0:macd_up_map.get(index);
+			double down = macd_down_map.get(index) == null ? 0:macd_down_map.get(index);
+			System.out.println("count "+index+" "+(up/down)+"	"+String.format("%.4f",((up-down)/(uplist.size()+downlist.size()))));
+			
+		}
+	}
+	
 	public static void MACD_CHECK() {
-		final int CYCLE = 500;
+		final int CYCLE = 1500;
 		final int COUNT_CYCLE = 20;
-		final double DIF_RANGE_UP = 0.2;
-		final double DIF_RANGE_DOWN = -0.2;
+		final double DIF_RANGE_UP = 10;
+		final double DIF_RANGE_DOWN = -10;
 		HashMap<Integer,Result> countMap = new HashMap<>();
 
 		double fundsCount = 0;
-		double ff = 0 ;
-		double funds = 0;
+		double cc = 0;
 		for(String mapKey : BaseConfig.tdx_share_map.keySet()) {
 			ArrayList<TDX_Share_Bean> list = BaseConfig.tdx_share_map.get(mapKey);
 
-			
+
+			double ff = 1 ;
+			double funds = 1;
 			for(int beanIndex = ((CYCLE == 0) ? 0 : ((list.size()-CYCLE) < 0? 0 : (list.size()-CYCLE))); beanIndex < list.size()-1;beanIndex++) {
 				TDX_Share_Bean bean = list.get(beanIndex);
 				TDX_Share_Bean nextBean = list.get(beanIndex+1);
-				if(bean.MACD < 0 && nextBean.MACD >0 && bean.DIF>DIF_RANGE_DOWN && bean.DIF <DIF_RANGE_UP){
+				if(bean.MACD < 0 && nextBean.MACD >0 && bean.DIF>DIF_RANGE_DOWN && bean.DIF <DIF_RANGE_UP
+//					&& nextBean.amount/nextBean.getAmountAverage(-5) > 2
+						){
 //					System.out.println("jx: "+nextBean.id+" "+nextBean.date);
 					for(int i =2 ;i< COUNT_CYCLE && beanIndex+i<list.size();i++) {
 						TDX_Share_Bean curBean = list.get(beanIndex+i);
@@ -43,23 +136,26 @@ public class StrategyAction {
 						if(curBean.close > nextBean.close){
 							result.priceUp++;
 							result.priceUpDif += nextBean.DIF;
-							result.amountUpPer += nextBean.amount/nextBean.getAmountAverage(-5);
+//							result.amountUpPer += nextBean.amount/nextBean.getAmountAverage(-5);
 						}else {
 							result.priceDown++;
 							result.priceDownDif += nextBean.DIF;
-							result.amountDownPer += nextBean.amount/nextBean.getAmountAverage(-5);
+//							result.amountDownPer += nextBean.amount/nextBean.getAmountAverage(-5);
 //							System.out.println("jx: "+nextBean.id+" "+nextBean.date);
 						}
 						
 						if(i == 2) {
-							double per = curBean.high/nextBean.close;
-							if(per > 1.015){
-								per = 1.015;
-							}else {
-								per = curBean.close/nextBean.close;
+							TDX_Share_Bean preBean = nextBean.getBean(-4);
+							if(preBean != null) {
+								double per = preBean.getBean(1).high/preBean.close;
+								if(per > 1.015){
+									per = 1.015;
+								}else {
+									per = preBean.getBean(1).close/preBean.close;
+								}
+								funds *= per;
+								ff++;
 							}
-							funds += per;
-							fundsCount++;
 						}
 						
 //						if(i == (COUNT_CYCLE -1) || (beanIndex+i+1) == list.size()) {
@@ -83,10 +179,12 @@ public class StrategyAction {
 					}
 				}
 			}
-			
+			double da = Math.pow(funds,1d/ff);
+			fundsCount += da;
+			cc++;
 		}
 		
-		System.out.println("xxyy "+String.format("%.3f",(funds/fundsCount)));
+		System.out.println("xxyy "+String.format("%.3f",(fundsCount/cc)));
 		
 		
 		double total = 0;

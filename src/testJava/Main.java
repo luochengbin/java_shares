@@ -12,7 +12,7 @@ public class Main {
 //		BaseConfig.dfcf_f10_map = SQLiteJDBC.getAllF10DataList();
 		BaseConfig.tdx_share_map = SQLiteJDBC.getAllTDXDataList();
 
-		StrategyAction.MACD_CHECK();		
+		StrategyAction.MACD_CHECK2();		
 //		StrategyAction.zhichengxian(100);
 //		StrategyAction.xiayingxian(100);
 //		StrategyAction.huimaqiang(500000);
