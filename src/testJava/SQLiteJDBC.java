@@ -764,7 +764,7 @@ public class SQLiteJDBC {
 	
 	public static HashMap<String,ArrayList<TDX_Share_Bean>> getAllTDXDataList(){
 		HashMap<String,ArrayList<TDX_Share_Bean>> list = new HashMap<String,ArrayList<TDX_Share_Bean>>();
-
+		BaseConfig.tdx_share_map = list;
 	    Connection connection = null;
 	    try
 	    {
@@ -798,6 +798,9 @@ public class SQLiteJDBC {
 	    		  list.put(bean.id, sublist);
 	    	  }else {
 	    		  list.get(bean.id).add(bean);
+	    		  
+	    		  getRSI(list.get(bean.id).size()-1,bean);
+	    		  
 //	    		  bean.EMA1 = bean.close*2/(EMA1+1)+list.get(bean.id).get(sublist.size()-2).EMA1*(EMA1-1)/(EMA1+1);
 //	    		  bean.EMA2 = bean.close*2/(EMA2+1)+list.get(bean.id).get(sublist.size()-2).EMA2*(EMA2-1)/(EMA2+1);
 //				  bean.DIF = bean.EMA1 - bean.EMA2;
@@ -813,6 +816,7 @@ public class SQLiteJDBC {
 	    {
 	      // if the error message is "out of memory", 
 	      // it probably means no database file is found
+	    	e.printStackTrace();
 	      System.err.println(e.getMessage());
 	    }
 	    finally
@@ -831,7 +835,56 @@ public class SQLiteJDBC {
 		System.out.println("getAllTDXDataList init done ");
 		return list;
 	}
-
+	
+	public static void getRSI(int index ,TDX_Share_Bean bean) {
+	  final int CYCLE = 6;
+	  if(index+1 == CYCLE) {
+		  double up = 0;
+		  double down = 0;
+		  for(int i =-(CYCLE-2);i<0;i++) {
+			  TDX_Share_Bean preBean = bean.getBean(i);
+			  double raise = preBean.close - preBean.getBean(-1).close;
+			  if(raise >0) {
+				  up += raise;
+			  }else {
+				  down += Math.abs(raise);
+			  }
+		  }
+		  if(down == 0) {
+			  bean.RSI6 = 100;
+			  bean.RSI6_up = up/CYCLE;
+		  }else {
+			  double RS = up/down;
+			  bean.RSI6 = (RS/(1+RS))*100;
+			  bean.RSI6_up = up/CYCLE;
+			  bean.RSI6_down = down/CYCLE;
+		  }
+	  }else if(index+1 >CYCLE) {
+		  double up = 0;
+		  double down = 0;
+		  double RS=0;
+		  TDX_Share_Bean preBean = bean.getBean(-1);
+		  double raise = bean.close - preBean.close;
+		  if(raise > 0) {
+			  up = preBean.RSI6_up*(CYCLE-1)/CYCLE+raise/CYCLE;
+			  down = preBean.RSI6_down*(CYCLE-1)/CYCLE;
+		  }else {
+			  up = preBean.RSI6_up*(CYCLE-1)/CYCLE;
+			  down = preBean.RSI6_down*(CYCLE-1)/CYCLE+Math.abs(raise/CYCLE);
+		  }
+		  if(down == 0) {
+			  bean.RSI6 = 100;
+			  bean.RSI6_up = up;
+		  }else {
+			  RS = (up)/(down);
+			  bean.RSI6 = 100*(RS/(1+RS));
+			  bean.RSI6_up = up;
+			  bean.RSI6_down = down;
+		  }
+	  }
+//	  System.out.println("rsi "+index+" "+bean.id+" "+bean.date+" "+bean.RSI6+" "+bean.RSI6_up+" "+bean.RSI6_down);
+	}
+	
 	/**
 	 * 以行为单位读取文件，常用于读面向行的格式化文件
 	 */

@@ -21,6 +21,10 @@ public class TDX_Share_Bean {
 	public double DIF;
 	public double DEA;
 	public double MACD;
+	public double RSI6;
+	public double RSI6_up;
+	public double RSI6_down;
+	
 	
 	public TDX_Share_Bean(){}
 	

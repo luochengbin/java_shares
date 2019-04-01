@@ -10,10 +10,57 @@ import testJava.bean.TDX_Share_Bean;
 public class StrategyAction {
 	
 	public static class CheckBean{
-		TDX_Share_Bean bean;
-		HashMap<Integer,Double> priceMap;
-		HashMap<Integer,Double> amountMap;
-		
+		long up;
+		long down;
+	}
+	
+	public static void RSI_CHECK() {
+		int cycle = 10;
+		for(int c = 1 ; c<=cycle;c++) {
+			System.out.println("----------------------------  "+c+"  -------------------------------");
+			long count = 0;
+			HashMap<Integer,CheckBean> map = new HashMap<>();
+			for(String mapKey : BaseConfig.tdx_share_map.keySet()) {
+				ArrayList<TDX_Share_Bean> list = BaseConfig.tdx_share_map.get(mapKey);
+				if(list.size()<100) {
+					continue;
+				}
+				for(int index = 100 ; index <list.size();index++) {
+					TDX_Share_Bean bean = list.get(index);
+					double raise = bean.close - bean.getBean(-c).close;
+					
+					//test
+					if(bean.getBean(-c+1).close < bean.getBean(-c).close || bean.getBean(-c+1).amount < bean.getBean(-c).amount) {
+						continue;
+					}
+					
+					int rsi = (int)bean.getBean(-c).RSI6;
+					if(map.get(rsi) == null) {
+						CheckBean checkBean = new CheckBean();
+						if(raise >0) {
+							checkBean.up ++;
+						}else {
+							checkBean.down ++;
+						}
+						map.put(rsi, checkBean);
+						count++;
+					}else {
+						if(raise >0) {
+							map.get(rsi).up ++;
+						}else {
+							map.get(rsi).down ++;
+						}
+						count++;
+					}
+				}
+			}
+			System.out.println("rsi "+count);
+			for(Integer key :map.keySet()) {
+				BigDecimal up = new BigDecimal(map.get(key).up);
+				BigDecimal down = new BigDecimal(map.get(key).down);
+				System.out.println("rsi "+key+" "+up+" "+down+" "+(down.compareTo(new BigDecimal(0)) == 0 ? 1:up.divide(down,3,BigDecimal.ROUND_HALF_DOWN))+" "+up.add(down).divide(new BigDecimal(count),3,BigDecimal.ROUND_HALF_DOWN));
+			}
+		}
 	}
 	
 	public static void MACD_CHECK2(){
