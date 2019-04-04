@@ -468,7 +468,8 @@ public class SQLiteJDBC {
 			    BaseConfig.sharesMap = new HashMap<>();
 			    int index =0;
 			    for(File subFile : file.listFiles()) {
-			    	BaseConfig.sharesMap.put(subFile.getName().substring(3, 9), null);
+			    	String name = subFile.getName().substring(3, 9);
+			    	BaseConfig.sharesMap.put(name, null);
 					list = dateUpdateTime > 0 ? readFileByLines(subFile.getAbsolutePath(),dateUpdateTime):readFileByLines(subFile.getAbsolutePath());
 					System.out.println("insert "+subFile.getName());
 					
@@ -480,7 +481,7 @@ public class SQLiteJDBC {
 					double dif = 0;
 					double dea = 0;
 					double macd = 0;
-				      ResultSet rs1 = statement.executeQuery("select * from data where id="+subFile.getName().substring(3, 9)+" order by date desc");
+				      ResultSet rs1 = statement.executeQuery("select * from data where id="+name+" order by date desc");
 				      if(rs1 != null && rs1.next()){
 				    	  isFirst = false;
 				    	  ema1 = rs1.getDouble(rs1.findColumn("ema1"));
@@ -491,7 +492,7 @@ public class SQLiteJDBC {
 					connection.setAutoCommit(false);
 					for(TDX_Share_Bean bean : list){
 //					      statement.executeUpdate("insert into data values("+subFile.getName().substring(3, 9)+", '',"+bean.date+","+bean.open+","+bean.high+","+bean.low+","+bean.close+","+bean.amount+","+bean.turnover+")");
-						String name = subFile.getName().substring(3, 9);
+						
 			    	    if(hh.get(name+bean.date) != null) {
 			    	    	continue;
 			    	    }
@@ -539,7 +540,8 @@ public class SQLiteJDBC {
 		    }else {
 			    BaseConfig.sharesMap = new HashMap<>();
 			    for(File subFile : file.listFiles()) {
-			    	BaseConfig.sharesMap.put(subFile.getName().substring(3, 9), null);
+			    	String name = subFile.getName().substring(3, 9);
+			    	BaseConfig.sharesMap.put(name, null);
 			    }
 		    }
 

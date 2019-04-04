@@ -14,6 +14,54 @@ public class StrategyAction {
 		long down;
 	}
 	
+	public static void CJL_CHEKC() {
+		HashMap<String,CheckBean> map = new HashMap<>();
+		map.put("1", new CheckBean());
+		map.put("2", new CheckBean());
+		map.put("3", new CheckBean());
+		map.put("4", new CheckBean());
+		map.put("5", new CheckBean());
+		for(String mapKey : BaseConfig.tdx_share_map.keySet()) {
+			ArrayList<TDX_Share_Bean> list = BaseConfig.tdx_share_map.get(mapKey);
+			if(list.size()<500) {
+				continue;
+			}
+			for(int index = list.size()-450 ; index <list.size()-25;index++) {
+				TDX_Share_Bean bean = list.get(index);
+				TDX_Share_Bean targetBean = null;
+				boolean isGold = false;
+				if(bean.close>bean.open &&
+						bean.close > bean.getBean(-1).close &&
+						bean.amount/bean.getAmountAverage(-10) > 2 && 
+						bean.amount/bean.getBean(-1).amount >2){
+					for(int i = 1 ; i<20;i++) {
+						TDX_Share_Bean subBean = bean.getBean(i);
+						if(subBean.amount< bean.amount*0.3 && subBean.close > bean.open && subBean.close<bean.close*1.05){
+							isGold = true;
+							targetBean = subBean;
+							System.out.println("cjl "+targetBean.id+" "+bean.date+" "+targetBean.date);
+						}
+					}
+				}
+				
+				if(isGold) {
+					for(String key : map.keySet()) {
+						CheckBean result = map.get(key);
+						if(targetBean.getBean(Integer.valueOf(key)).close>targetBean.close) {
+							result.up++;
+						}else {
+							result.down++;
+						}
+					}
+				}
+			}
+		}
+		for(String key : map.keySet()) {
+			CheckBean result = map.get(key);
+			System.out.println("cjl "+result.up +" "+result.down+" "+ result.up/Double.valueOf(result.down));
+		}
+	}
+	
 	public static void RSI_CHECK() {
 		int cycle = 10;
 		for(int c = 1 ; c<=cycle;c++) {
